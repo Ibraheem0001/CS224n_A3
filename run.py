@@ -163,7 +163,7 @@ def train(args: Dict):
     vocab_mask = torch.ones(len(vocab.tgt))
     vocab_mask[vocab.tgt['<pad>']] = 0
 
-    device = torch.device("cuda:0" if args['--cuda'] else "cpu")
+    device = torch.device("mps" if args['--cuda'] else "cpu")
     print('use device: %s' % device, file=sys.stderr)
 
     model = model.to(device)
@@ -180,7 +180,6 @@ def train(args: Dict):
 
     while True:
         epoch += 1
-
         for src_sents, tgt_sents in batch_iter(train_data, batch_size=train_batch_size, shuffle=True):
             train_iter += 1
 
@@ -319,7 +318,7 @@ def decode(args: Dict[str, str]):
     model = NMT.load(args['MODEL_PATH'])
 
     if args['--cuda']:
-        model = model.to(torch.device("cuda:0"))
+        model = model.to(torch.device("mps"))
 
     hypotheses = beam_search(model, test_data_src,
                             #  beam_size=int(args['--beam-size']),                      EDIT: BEAM SIZE USED TO BE 5
@@ -367,10 +366,12 @@ def main():
     """ Main func.
     """
     # args = docopt(__doc__)
+
+    ## ---------------uncomment below args for debug mode---------------##
     args = {'--batch-size': '32',
     '--beam-size': '5',
     '--clip-grad': '5.0',
-    '--cuda': False,
+    '--cuda': True,
     '--dev-src': './zh_en_data/dev.zh',
     '--dev-tgt': './zh_en_data/dev.en',
     '--dropout': '0.3',
