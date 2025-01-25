@@ -192,9 +192,9 @@ class NMT(nn.Module):
 
         ### END YOUR CODE
         X = self.model_embeddings(source_padded, type="encoder")
-        cnn_out = self.post_embed_cnn(X.permute(1,2,0))
-        cnn_padded_out = pack_padded_sequence(cnn_out.permute(2,0,1), lengths=source_lengths)
-        enc_hiddens, (last_hidden, last_cell) = self.encoder(cnn_padded_out)
+        X = self.post_embed_cnn(X.permute(1,2,0)).permute(2,0,1) # 1D CNN layer is kind of like attention but only between adjacent words defined by kernel size.
+        padded_X = pack_padded_sequence(X, lengths=source_lengths)
+        enc_hiddens, (last_hidden, last_cell) = self.encoder(padded_X)
         enc_hiddens = pad_packed_sequence(enc_hiddens)
         enc_hiddens = enc_hiddens[0].permute(1,0,2)
         last_hidden_cat = torch.cat((last_hidden[0], last_hidden[1]), axis=1) # Concatenate the forwards and backwards hidden states
